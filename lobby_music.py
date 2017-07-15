@@ -4,6 +4,7 @@ import youtube_dl
 import os
 import ffmpeg_normalize
 import shutil
+import re
 
 def load_txt_song_list():
     songs = []
@@ -153,6 +154,7 @@ def normalise_audio(path):
     normaliser = ffmpeg_normalize.FFmpegNormalize(args)
     normaliser.run()
     filename = os.path.basename(path)
+    filename = re.sub('[^a-zA-Z0-9*.]', '', filename)
     shutil.move("./raw_songs/normalized/{}".format(filename), "./lobby_music/{}".format(filename))
     return "./lobby_music/{}".format(filename)
 
@@ -167,7 +169,7 @@ def generate_config(paths):
     config = ""
     for path in paths:
         filename = os.path.basename(path)
-        config = config + "sounds/lobby_music/{}\n".format(filename)
+        config = config + "hippiestation/sound/lobby/{}\n".format(filename)
     config_f = file("./lobby_music/round_start_sounds.txt", 'w+')
     config_f.write(config)
     print("Config written to ./lobby_music/round_start_sounds.txt")
