@@ -114,7 +114,7 @@ def _download_link(song_url):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([song_url])
     
-    song_file, ext = os.path.splitext(song_file)
+    song_file, ext = os.path.splitext(song_file.encode('ascii', 'ignore').decode('ascii'))
     song_file = "{}.ogg".format(song_file)
     new_path = "./raw_songs/{}".format(song_file)
     print("Moving {} to {}".format(song_file, new_path))
@@ -154,8 +154,8 @@ def normalise_audio(path):
     normaliser = ffmpeg_normalize.FFmpegNormalize(args)
     normaliser.run()
     filename = os.path.basename(path)
-    filename = re.sub('[^a-zA-Z0-9*.]', '', filename)
-    shutil.move("./raw_songs/normalized/{}".format(filename), "./lobby_music/{}".format(filename))
+    san_filename = re.sub('[^a-zA-Z0-9*.]', '', filename)
+    shutil.move("./raw_songs/normalized/{}".format(filename), "./lobby_music/{}".format(san_filename))
     return "./lobby_music/{}".format(filename)
 
 def process_songs(song_list, db):
@@ -169,9 +169,11 @@ def generate_config(paths):
     config = ""
     for path in paths:
         filename = os.path.basename(path)
-        config = config + "hippiestation/sound/lobby/{}\n".format(filename)
-    config_f = file("./lobby_music/round_start_sounds.txt", 'w+')
-    config_f.write(config)
+        san_filename = re.sub('[^a-zA-Z0-9*.]', '', filename)
+        config = config + "hippiestation/sound/lobby/{}\n".format(san_filename)
+    
+    config_f = open("./lobby_music/round_start_sounds.txt", 'wb+')
+    config_f.write(config.rstrip())
     print("Config written to ./lobby_music/round_start_sounds.txt")
 
 db = load_json_lobby()
